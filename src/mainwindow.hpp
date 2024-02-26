@@ -2,6 +2,7 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
+#include <QKeyEvent>
 #include "Worker.hpp"
 
 QT_BEGIN_NAMESPACE
@@ -26,6 +27,7 @@ class MainWindow : public QMainWindow
         void AtEnd(void);
         void Feedback(const int &n);
         void TimeOut(void);
+        void keyPressEvent(QKeyEvent *event) override;
 
 };
 

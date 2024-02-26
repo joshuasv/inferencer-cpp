@@ -31,3 +31,15 @@ void MainWindow::AtEnd(void)
 {
   std::cout << "MainWindow::AtEnd enter\n";
 }
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+  if (event->key() == Qt::Key_Q)
+  {
+    close();
+  }
+  else
+  {
+    QMainWindow::keyPressEvent(event);
+  }
+}
