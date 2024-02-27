@@ -3,7 +3,9 @@
 
 #include <QMainWindow>
 #include <QKeyEvent>
+#include <QImage>
 #include "Worker.hpp"
+#include "Inferencer.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,6 +24,9 @@ class MainWindow : public QMainWindow
     private:
         Ui::MainWindow *ui;
         Worker *webcamFrameGrabber;
+        Inferencer *inferencer;
+        QImage cvMatToQImage(const cv::Mat &mat);
+        void updateDisplay(const cv::Mat &mat);
 
     protected slots:
         void AtEnd(void);

@@ -7,6 +7,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(OpenCV REQUIRED)
+find_package(onnxruntime REQUIRED)
+find_library(ONNX_RUNTIME_LIB onnxruntime HINTS /usr/local/lib)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 qt_standard_project_setup()
 
 qt_add_executable(inferencer-cpp
@@ -14,12 +19,13 @@ qt_add_executable(inferencer-cpp
   src/mainwindow.cpp
   src/globals.cpp
   src/Worker.cpp
+  src/Inferencer.cpp
   src/main.cpp
 )
 
-target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets)
+target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets ${OpenCV_LIBS} ${ONNX_RUNTIME_LIB})
 
 set_target_properties(inferencer-cpp PROPERTIES
-    WIN32_EXECUTABLE ON
-    MACOSX_BUNDLE ON
+  WIN32_EXECUTABLE ON
+  MACOSX_BUNDLE ON
 )
