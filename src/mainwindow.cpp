@@ -1,20 +1,22 @@
 #include <iostream>
+#include <QFile>
 #include "ui_mainwindow.h"
 #include "mainwindow.hpp"
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(std::string modelFPath, std::variant<std::string, int> source, QWidget* parent)
   : QMainWindow(parent)
   , ui(new Ui::MainWindow)
 {
-  ui->setupUi(this);
-
-  webcamFrameGrabber = new Worker(); 
-  inferencer = new Inferencer();
-
-  connect(webcamFrameGrabber, &Worker::frameCaptured, inferencer, &Inferencer::doInference);
-  connect(inferencer, &Inferencer::frameProcessed, this, &MainWindow::updateDisplay);
-
-  // connect(webcamFrameGrabber, &Worker::frameCaptured, this, &MainWindow::updateDisplay);
+  if (std::holds_alternative<int>(source))
+  {
+    webcamFrameGrabber = new Worker(std::get<int>(source)); 
+  }
+  else
+  {
+    webcamFrameGrabber = new Worker(std::get<std::string>(source)); 
+  }
+  inferencer = new ONNXInferencer(modelFPath);
+  commonInit();
 }
 
 MainWindow::~MainWindow()
@@ -23,19 +25,17 @@ MainWindow::~MainWindow()
   delete ui;
 }
 
-void MainWindow::TimeOut(void)
+void MainWindow::commonInit(void)
 {
-  std::cout << "MainWindow::TimeOut enter\n";
-}
+  ui->setupUi(this);
+  inferenceThread = new QThread();
+  inferencer->moveToThread(inferenceThread);
+  inferenceThread->start();
 
-void MainWindow::Feedback(const int &n)
-{
-  std::cout << "MainWindow::Feedback enter\n";
-}
-
-void MainWindow::AtEnd(void)
-{
-  std::cout << "MainWindow::AtEnd enter\n";
+  connect(webcamFrameGrabber, &Worker::frameCaptured, inferencer, &ONNXInferencer::runInference, Qt::QueuedConnection);
+  connect(webcamFrameGrabber, &Worker::frameCaptured, this, &MainWindow::updateDisplay);
+  connect(inferencer, &ONNXInferencer::frameReady, this, &MainWindow::updateInferenceDisplay);
+  connect(inferenceThread, &QThread::finished, inferencer, &QObject::deleteLater);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -43,13 +43,13 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
   if (event->key() == Qt::Key_Q)
   {
     webcamFrameGrabber->terminate();
-    inferencer->terminate();
+    // onnxInference->terminate();
     close();
   }
   else if (event->key() == Qt::Key_S)
   {
     webcamFrameGrabber->start(QThread::HighPriority);
-    inferencer->start(QThread::HighPriority);
+    // onnxInference->start(QThread::HighPriority);
   }
   else
   {
@@ -79,12 +79,21 @@ QImage MainWindow::cvMatToQImage(const cv::Mat &mat)
   return QImage();
 }
 
-void MainWindow::updateDisplay(const cv::Mat &frame)
+void MainWindow::updateInferenceDisplay(const cv::Mat &mat)
 {
-  std::cout << "MainWindow::updateDisplay\n";
-  QImage qImg = cvMatToQImage(frame);
-  ui->imageLabel->setPixmap(
+  QImage qImg = cvMatToQImage(mat);
+  ui->inferenceLabel->setPixmap(
     QPixmap::fromImage(qImg).scaled(
-      ui->imageLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation
+      ui->inferenceLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation
+  ));
+}
+
+void MainWindow::updateDisplay(const cv::Mat &mat)
+{
+  // Displays frame to window
+  QImage qImg = cvMatToQImage(mat);
+  ui->frameLabel->setPixmap(
+    QPixmap::fromImage(qImg).scaled(
+      ui->frameLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation
   ));
 }

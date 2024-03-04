@@ -7,19 +7,25 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(OpenCV REQUIRED)
+# find_package(OpenCV REQUIRED)
 find_package(onnxruntime REQUIRED)
 find_library(ONNX_RUNTIME_LIB onnxruntime HINTS /usr/local/lib)
+# include_directories(${OpenCV_INCLUDE_DIRS})
+
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+  set(OpenCV_DIR "/home/rock/builds/opencv-4.8.1/installDebug/lib/cmake/opencv4")
+endif()
+find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
+
 
 qt_standard_project_setup()
 
 qt_add_executable(inferencer-cpp
   src/mainwindow.ui
   src/mainwindow.cpp
-  src/globals.cpp
   src/Worker.cpp
-  src/Inferencer.cpp
+  src/ONNXInferencer.cpp
   src/main.cpp
 )
 
@@ -29,3 +35,8 @@ set_target_properties(inferencer-cpp PROPERTIES
   WIN32_EXECUTABLE ON
   MACOSX_BUNDLE ON
 )
+
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
+endif()

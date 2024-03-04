@@ -2,14 +2,21 @@
 
 // static uchar pixels[W*H*D];
 
-Worker::Worker(QObject *parent): QThread(parent)
+Worker::Worker(int source, QObject *parent): QThread(parent)
 {
-  int cameraIndex = 2;
-  int cameraAPI = cv::CAP_V4L;
-  cap.open(cameraIndex, cameraAPI);
+  cap.open(source, cv::CAP_V4L);
   if (!cap.isOpened())
   {
-    std::cerr << "Unable to open camera: " << cameraIndex << "\n";
+    std::cerr << "Unable to open camera: " << source << "\n";
+  }
+}
+
+Worker::Worker(std::string source, QObject *parent): QThread(parent)
+{
+  cap.open(source); 
+  if (!cap.isOpened())
+  {
+    std::cerr << "Unable to open video file: " << source << "\n";
   }
 }
 
@@ -23,6 +30,7 @@ Worker::~Worker()
 
 void Worker::run()
 {
+  int frameDelay = int(1000/30);
   cv::Mat frame;
   while (cap.isOpened())  
   {
@@ -33,10 +41,7 @@ void Worker::run()
       break;
     }
     emit frameCaptured(frame);
+    // Simualte that we are grabbing at n FPS; TODO: remove
+    QThread::msleep(frameDelay);
   }
-}
-
-void Worker::work()
-{
-
 }
