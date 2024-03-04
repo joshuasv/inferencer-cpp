@@ -32,6 +32,10 @@ ONNXInferencer::ONNXInferencer(const std::string& modelFPath, QObject* parent)
     Ort::AllocatedStringPtr nodeName = session.GetOutputNameAllocated(i, defAllocator);
     strcpy(tmpBuff, nodeName.get());
     outputNodeNames.push_back(tmpBuff);
+    // Get output shape
+    Ort::TypeInfo typeInfo = session.GetOutputTypeInfo(i);
+    auto tensorInfo = typeInfo.GetTensorTypeAndShapeInfo();
+    outputNodeShape = tensorInfo.GetShape();
   }
 }
 
@@ -69,11 +73,16 @@ Ort::Value& ONNXInferencer::preprocessFrame(const cv::Mat& inFrame)
 
 void ONNXInferencer::runInference(const cv::Mat& frame)
 {
+  // TODO: refactor
   Ort::Value outputTensor{nullptr};
-  // Preprocess frame
+  cv::Mat outputData;
+  float* data;
+
   cv::Mat tmp, tmpDisplay;
   frame.copyTo(tmp);
   frame.copyTo(tmpDisplay);
+
+  // Preprocess frame
   cv::dnn::blobFromImage(tmp, tmp, 1./255., cv::Size(inputNodeShape.at(3), inputNodeShape.at(2)), 0.0, true, false, CV_32F);
   Ort::Value inputTensor = Ort::Value::CreateTensor<float>(
     memInfo,
@@ -93,9 +102,63 @@ void ONNXInferencer::runInference(const cv::Mat& frame)
     &outputTensor,
     1
   );
-  
+  // Grab output bboxes
+  std::vector<int> class_ids;
+  std::vector<float> confidences;
+  std::vector<cv::Rect> boxes;
+  float* output = outputTensor.GetTensorMutableData<float>();
+  outputData = cv::Mat(outputNodeShape.at(1), outputNodeShape.at(2), CV_32F, output);
+  outputData = outputData.t();
+  data = (float*) outputData.data;
+  for (int i = 0; i < outputData.rows; ++i)
+  {
+    float* classesScores = data + 4;
+    cv::Mat scores(1, this->classes.size(), CV_32FC1, classesScores);
+    cv::Point class_id;
+    double maxClassScore;
+    cv::minMaxLoc(scores, 0, &maxClassScore, 0, &class_id);
+    if (maxClassScore > rectConfidenceThreshold)
+    {
+      confidences.push_back(maxClassScore);
+      class_ids.push_back(class_id.x);
+      float x = data[0];
+      float y = data[1];
+      float w = data[2];
+      float h = data[3];
+      int left = int((x - 0.5 * w) * factorX);
+      int top = int((y - 0.5 * h) * factorY);
+      int width = int(w * factorX);
+      int height = int(h * factorY);
+      boxes.push_back(cv::Rect(left, top, width, height));
+    }
+    data += outputData.cols;
+  }
+  // Do NMS
+  std::vector<int> nmsResult;
+  cv::dnn::NMSBoxes(boxes, confidences, rectConfidenceThreshold, iouThreshold, nmsResult);
+  // Draw inference results
+  for (int i = 0; i < nmsResult.size(); ++i)
+  {
+    int idx = nmsResult[i];
+    int classId = class_ids[idx];
+    std::string className = classes[classId];
+    cv::Scalar classColor = colors[classId];
+    cv::Size textSize;
+    cv::Rect textBbox;
+    float confidence = confidences[idx];
+    cv::Rect bbox = boxes[idx];
+
+    std::string classString = className + " " + std::to_string(confidence).substr(0, 4);
+    textSize = cv::getTextSize(classString, cv::FONT_HERSHEY_DUPLEX, 1, 2, 0);
+    textBbox = cv::Rect(bbox.x, bbox.y - 40, textSize.width + 10, textSize.height + 20);
+
+    cv::rectangle(tmpDisplay, bbox, classColor, 2);
+    cv::rectangle(tmpDisplay, textBbox, classColor, cv::FILLED);
+    cv::putText(tmpDisplay, classString, cv::Point(bbox.x + 5, bbox.y - 10), cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(0, 0, 0), 2, 0);
+  }
+
   // TOREMOVE;
-  cv::putText(tmpDisplay, "watermark", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0,0,0), 5);
+  // cv::putText(tmpDisplay, "watermark", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0,0,0), 5);
 
   emit frameReady(tmpDisplay);
 }
