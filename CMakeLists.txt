@@ -26,6 +26,7 @@ qt_add_executable(inferencer-cpp
   src/mainwindow.cpp
   src/Worker.cpp
   src/ONNXInferencer.cpp
+  src/ObjectDetectionDrawer.cpp
   src/main.cpp
 )
 

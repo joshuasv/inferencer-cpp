@@ -16,6 +16,10 @@ MainWindow::MainWindow(std::string modelFPath, std::variant<std::string, int> so
     webcamFrameGrabber = new Worker(std::get<std::string>(source)); 
   }
   inferencer = new ONNXInferencer(modelFPath);
+  // TODO: refactor
+  const std::vector<std::string> classes{"white", "blue", "orange"};
+  const std::vector<cv::Scalar> colors{cv::Scalar(255, 255, 255), cv::Scalar(165, 0, 0), cv::Scalar(0, 165, 255)};
+  drawer = new ObjectDetectionDrawer(classes, colors);
   commonInit();
 }
 
@@ -28,14 +32,17 @@ MainWindow::~MainWindow()
 void MainWindow::commonInit(void)
 {
   ui->setupUi(this);
-  inferenceThread = new QThread();
-  inferencer->moveToThread(inferenceThread);
-  inferenceThread->start();
+  inferencerThread = new QThread();
+  drawerThread = new QThread();
+  inferencer->moveToThread(inferencerThread);
+  drawer->moveToThread(drawerThread);
 
   connect(webcamFrameGrabber, &Worker::frameCaptured, inferencer, &ONNXInferencer::runInference, Qt::QueuedConnection);
   connect(webcamFrameGrabber, &Worker::frameCaptured, this, &MainWindow::updateDisplay);
-  connect(inferencer, &ONNXInferencer::frameReady, this, &MainWindow::updateInferenceDisplay);
-  connect(inferenceThread, &QThread::finished, inferencer, &QObject::deleteLater);
+  connect(inferencer, &ONNXInferencer::resultsReady, drawer, &ObjectDetectionDrawer::draw, Qt::QueuedConnection);
+  connect(drawer, &ObjectDetectionDrawer::frameReady, this, &MainWindow::updateInferenceDisplay);
+  connect(inferencerThread, &QThread::finished, inferencer, &QObject::deleteLater);
+  connect(drawerThread, &QThread::finished, drawer, &QObject::deleteLater);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -43,13 +50,15 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
   if (event->key() == Qt::Key_Q)
   {
     webcamFrameGrabber->terminate();
-    // onnxInference->terminate();
+    inferencerThread->terminate();
+    drawerThread->terminate();
     close();
   }
   else if (event->key() == Qt::Key_S)
   {
     webcamFrameGrabber->start(QThread::HighPriority);
-    // onnxInference->start(QThread::HighPriority);
+    inferencerThread->start(QThread::HighPriority);
+    drawerThread->start(QThread::HighPriority);
   }
   else
   {

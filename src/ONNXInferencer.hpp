@@ -24,7 +24,7 @@ class ONNXInferencer: public QThread
     std::vector<int64_t> inputNodeShape;
     std::vector<int64_t> outputNodeShape;
     int inputNodeBytes;
-    Ort::Value& preprocessFrame(const cv::Mat& inFrame);
+    // Ort::Value& preprocessFrame(const cv::Mat& inFrame);
     Ort::Session createSession(const Ort::Env& env, const std::string& modelFPath);
     // TODO: refactor
     float rectConfidenceThreshold = 0.45;
@@ -35,7 +35,7 @@ class ONNXInferencer: public QThread
     std::vector<cv::Scalar> colors{cv::Scalar(255, 255, 255), cv::Scalar(165, 0, 0), cv::Scalar(0, 165, 255)};
 
   signals:
-    void frameReady(const cv::Mat& frame);
+    void resultsReady(const cv::Mat& frame, const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences);
 
   public slots:
     void runInference(const cv::Mat& frame);

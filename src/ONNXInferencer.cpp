@@ -56,20 +56,20 @@ Ort::Session ONNXInferencer::createSession(const Ort::Env& env, const std::strin
   return Ort::Session(env, modelFPath.c_str(), sessOps);
 }
 
-Ort::Value& ONNXInferencer::preprocessFrame(const cv::Mat& inFrame)
-{
-  cv::Mat tmp;
-  cv::dnn::blobFromImage(inFrame, tmp, 1./255., cv::Size(inputNodeShape.at(3), inputNodeShape.at(2)), 0.0, true, false, CV_32F);
-  Ort::Value outTensor = Ort::Value::CreateTensor<float>(
-    memInfo,
-    (float*) tmp.data,
-    inputNodeBytes,
-    inputNodeShape.data(),
-    inputNodeShape.size()
-  );
+// Ort::Value& ONNXInferencer::preprocessFrame(const cv::Mat& inFrame)
+// {
+//   cv::Mat tmp;
+//   cv::dnn::blobFromImage(inFrame, tmp, 1./255., cv::Size(inputNodeShape.at(3), inputNodeShape.at(2)), 0.0, true, false, CV_32F);
+//   Ort::Value outTensor = Ort::Value::CreateTensor<float>(
+//     memInfo,
+//     (float*) tmp.data,
+//     inputNodeBytes,
+//     inputNodeShape.data(),
+//     inputNodeShape.size()
+//   );
 
-  return outTensor;
-}
+//   return outTensor;
+// }
 
 void ONNXInferencer::runInference(const cv::Mat& frame)
 {
@@ -78,9 +78,10 @@ void ONNXInferencer::runInference(const cv::Mat& frame)
   cv::Mat outputData;
   float* data;
 
-  cv::Mat tmp, tmpDisplay;
-  frame.copyTo(tmp);
-  frame.copyTo(tmpDisplay);
+  cv::Mat tmp; //, tmpDisplay;
+  // frame.copyTo(tmp);
+  tmp = frame.clone();
+  // frame.copyTo(tmpDisplay);
 
   // Preprocess frame
   cv::dnn::blobFromImage(tmp, tmp, 1./255., cv::Size(inputNodeShape.at(3), inputNodeShape.at(2)), 0.0, true, false, CV_32F);
@@ -136,29 +137,19 @@ void ONNXInferencer::runInference(const cv::Mat& frame)
   // Do NMS
   std::vector<int> nmsResult;
   cv::dnn::NMSBoxes(boxes, confidences, rectConfidenceThreshold, iouThreshold, nmsResult);
-  // Draw inference results
+  std::vector<int> classIds;
+  std::vector<cv::Rect> bboxes;
+  std::vector<float> confidences_;
   for (int i = 0; i < nmsResult.size(); ++i)
   {
     int idx = nmsResult[i];
     int classId = class_ids[idx];
-    std::string className = classes[classId];
-    cv::Scalar classColor = colors[classId];
-    cv::Size textSize;
-    cv::Rect textBbox;
     float confidence = confidences[idx];
     cv::Rect bbox = boxes[idx];
-
-    std::string classString = className + " " + std::to_string(confidence).substr(0, 4);
-    textSize = cv::getTextSize(classString, cv::FONT_HERSHEY_DUPLEX, 1, 2, 0);
-    textBbox = cv::Rect(bbox.x, bbox.y - 40, textSize.width + 10, textSize.height + 20);
-
-    cv::rectangle(tmpDisplay, bbox, classColor, 2);
-    cv::rectangle(tmpDisplay, textBbox, classColor, cv::FILLED);
-    cv::putText(tmpDisplay, classString, cv::Point(bbox.x + 5, bbox.y - 10), cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(0, 0, 0), 2, 0);
+    classIds.push_back(classId);
+    bboxes.push_back(bbox);
+    confidences_.push_back(confidence);
   }
 
-  // TOREMOVE;
-  // cv::putText(tmpDisplay, "watermark", cv::Point(50,50), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0,0,0), 5);
-
-  emit frameReady(tmpDisplay);
+  emit resultsReady(frame, classIds, bboxes, confidences_);
 }

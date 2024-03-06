@@ -7,6 +7,7 @@
 #include <QImage>
 #include "Worker.hpp"
 #include "ONNXInferencer.hpp"
+#include "ObjectDetectionDrawer.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,7 +31,9 @@ class MainWindow : public QMainWindow
         Ui::MainWindow* ui;
         Worker* webcamFrameGrabber;
         ONNXInferencer* inferencer;
-        QThread* inferenceThread;
+        ObjectDetectionDrawer* drawer;
+        QThread* inferencerThread;
+        QThread* drawerThread;
         void commonInit(void);
         QImage cvMatToQImage(const cv::Mat& mat);
 
