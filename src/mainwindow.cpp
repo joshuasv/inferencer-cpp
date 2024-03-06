@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <iostream>
 #include <QFile>
 #include "ui_mainwindow.h"
@@ -39,8 +40,11 @@ void MainWindow::commonInit(void)
 
   connect(webcamFrameGrabber, &Worker::frameCaptured, inferencer, &ONNXInferencer::runInference, Qt::QueuedConnection);
   connect(webcamFrameGrabber, &Worker::frameCaptured, this, &MainWindow::updateDisplay);
+  connect(webcamFrameGrabber, &Worker::updateTimer, this, &MainWindow::updateTimerFrameLabel);
   connect(inferencer, &ONNXInferencer::resultsReady, drawer, &ObjectDetectionDrawer::draw, Qt::QueuedConnection);
+  connect(inferencer, &ONNXInferencer::updateTimer, this, &MainWindow::updateTimerInferencerLabel);
   connect(drawer, &ObjectDetectionDrawer::frameReady, this, &MainWindow::updateInferenceDisplay);
+  connect(drawer, &ObjectDetectionDrawer::updateTimer, this, &MainWindow::updateTimerDrawerLabel);
   connect(inferencerThread, &QThread::finished, inferencer, &QObject::deleteLater);
   connect(drawerThread, &QThread::finished, drawer, &QObject::deleteLater);
 }
@@ -105,4 +109,36 @@ void MainWindow::updateDisplay(const cv::Mat &mat)
     QPixmap::fromImage(qImg).scaled(
       ui->frameLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation
   ));
+}
+
+void MainWindow::updateTimerFrameLabel(const float& value)
+{
+  std::string msg = "Frame grabber: ";
+  std::ostringstream stream;
+  stream << std::fixed << std::setprecision(2) << value;
+  std::string formattedValue = stream.str();
+  std::string result = msg + formattedValue;
+
+  ui->timerFrameLabel->setText(result.c_str());
+}
+
+void MainWindow::updateTimerInferencerLabel(const float& value)
+{
+  std::string msg = "Inferencer: ";
+  std::ostringstream stream;
+  stream << std::fixed << std::setprecision(2) << value;
+  std::string formattedValue = stream.str();
+  std::string result = msg + formattedValue;
+
+  ui->timerInferencerLabel->setText(result.c_str());
+}
+void MainWindow::updateTimerDrawerLabel(const float& value)
+{
+  std::string msg = "Drawer: ";
+  std::ostringstream stream;
+  stream << std::fixed << std::setprecision(2) << value;
+  std::string formattedValue = stream.str();
+  std::string result = msg + formattedValue;
+
+  ui->timerDrawerLabel->setText(result.c_str());
 }

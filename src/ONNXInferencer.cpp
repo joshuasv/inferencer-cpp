@@ -152,4 +152,7 @@ void ONNXInferencer::runInference(const cv::Mat& frame)
   }
 
   emit resultsReady(frame, classIds, bboxes, confidences_);
+
+  t.insertTimeDifference();
+  emit updateTimer(t.average());
 }

@@ -52,6 +52,58 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>30</y>
+      <width>81</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Timer (ms)</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="timerFrameLabel">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>50</y>
+      <width>341</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Frame grabber:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="timerInferencerLabel">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>70</y>
+      <width>341</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Inferencer:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="timerDrawerLabel">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>90</y>
+      <width>341</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Drawer:</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

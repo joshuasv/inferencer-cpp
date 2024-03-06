@@ -41,6 +41,9 @@ class MainWindow : public QMainWindow
         void keyPressEvent(QKeyEvent* event) override;
         void updateDisplay(const cv::Mat& mat);
         void updateInferenceDisplay(const cv::Mat& mat);
+        void updateTimerFrameLabel(const float& value);
+        void updateTimerInferencerLabel(const float& value);
+        void updateTimerDrawerLabel(const float& value);
 };
 
 #endif // MAINWINDOW_HPP

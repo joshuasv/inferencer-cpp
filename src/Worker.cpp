@@ -30,7 +30,6 @@ Worker::~Worker()
 
 void Worker::run()
 {
-  int frameDelay = int(1000/30);
   cv::Mat frame;
   while (cap.isOpened())  
   {
@@ -41,7 +40,8 @@ void Worker::run()
       break;
     }
     emit frameCaptured(frame);
-    // Simualte that we are grabbing at n FPS; TODO: remove
-    QThread::msleep(frameDelay);
+    
+    t.insertTimeDifference();
+    emit updateTimer(t.average());
   }
 }

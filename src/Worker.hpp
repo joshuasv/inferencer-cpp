@@ -4,6 +4,7 @@
 #include <random>
 #include <QThread>
 #include <opencv2/opencv.hpp>
+#include "MyTimer.hpp"
 
 class Worker: public QThread
 {
@@ -17,9 +18,11 @@ class Worker: public QThread
   private:
     cv::VideoCapture cap;
     void run(void);
+    MyTimer t = MyTimer(20);
 
   signals:
     void frameCaptured(const cv::Mat &frame);
+    void updateTimer(const float& value);
 };
 
 #endif  // WORKER_HPP

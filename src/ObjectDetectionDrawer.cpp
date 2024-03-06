@@ -27,4 +27,7 @@ void ObjectDetectionDrawer::draw(const cv::Mat& frame, const std::vector<int>& c
   }
 
   emit frameReady(frameDraw);
+
+  t.insertTimeDifference();
+  emit updateTimer(t.average());
 }

@@ -4,6 +4,7 @@
 #include <QThread>
 #include <opencv2/core.hpp>
 #include "onnxruntime/onnxruntime_cxx_api.h"
+#include "MyTimer.hpp"
 
 
 class ONNXInferencer: public QThread
@@ -33,9 +34,11 @@ class ONNXInferencer: public QThread
     float factorY = 0.75;
     std::vector<std::string> classes{"white", "blue", "orange"};
     std::vector<cv::Scalar> colors{cv::Scalar(255, 255, 255), cv::Scalar(165, 0, 0), cv::Scalar(0, 165, 255)};
+    MyTimer t = MyTimer(20);
 
   signals:
     void resultsReady(const cv::Mat& frame, const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences);
+    void updateTimer(const float& value);
 
   public slots:
     void runInference(const cv::Mat& frame);
