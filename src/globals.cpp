@@ -1,0 +1,1 @@
+bool IS_RUNNING;

@@ -1,6 +1,5 @@
 #include "Worker.hpp"
-
-// static uchar pixels[W*H*D];
+#include "globals.hpp"
 
 Worker::Worker(int source, QObject *parent): QThread(parent)
 {
@@ -42,7 +41,7 @@ Worker::~Worker()
 void Worker::run()
 {
   cv::Mat frame;
-  while (cap.isOpened())  
+  while (cap.isOpened() && IS_RUNNING)  
   {
     cap >> frame;
     if (frame.empty())

@@ -3,6 +3,7 @@
 #include <QFile>
 #include "ui_mainwindow.h"
 #include "mainwindow.hpp"
+#include "globals.hpp"
 
 MainWindow::MainWindow(std::string modelFPath, std::variant<std::string, int> source, QWidget* parent)
   : QMainWindow(parent)
@@ -53,6 +54,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 {
   if (event->key() == Qt::Key_Q)
   {
+    IS_RUNNING = false;
     webcamFrameGrabber->quit();
     inferencerThread->quit();
     drawerThread->quit();
@@ -63,6 +65,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
   }
   else if (event->key() == Qt::Key_S)
   {
+    IS_RUNNING = true;
     webcamFrameGrabber->start(QThread::HighPriority);
     inferencerThread->start(QThread::HighPriority);
     drawerThread->start(QThread::HighPriority);

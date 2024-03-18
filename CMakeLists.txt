@@ -28,6 +28,7 @@ qt_add_executable(inferencer-cpp
   src/ONNXInferencer.cpp
   src/ObjectDetectionDrawer.cpp
   src/MyTimer.cpp
+  src/globals.cpp
   src/main.cpp
 )
 
