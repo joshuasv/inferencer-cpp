@@ -33,6 +33,10 @@ Worker::~Worker()
   {
     cap.release();
   }
+  #ifdef DEBUG_MODE
+  // Save timer measurements to file
+  t.saveMeasurements("grabber_times");
+  #endif
 }
 
 void Worker::run()

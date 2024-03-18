@@ -37,6 +37,10 @@ bool checkArgs(QStringList& args)
 
 int main(int argc, char *argv[])
 {
+  #ifdef DEBUG_MODE
+    std::cout << "DEBUG_MODE: ON\n";
+  # endif
+
   QApplication a(argc, argv);
   QStringList args = a.arguments();
   bool argsOk = checkArgs(args);

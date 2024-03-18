@@ -59,4 +59,28 @@ void MyTimer::insertWithTimestamp(float value, std::chrono::high_resolution_cloc
   }
   isFull = tail == head;
   lastInsertTime = now;
+  #ifdef DEBUG_MODE
+  measurements.push_back(value);
+  #endif
+}
+
+#ifdef DEBUG_MODE
+void MyTimer::saveMeasurements(const std::string& fName)
+{
+  std::string fullFPath = BUILD_DIR + fName + ".txt";
+  std::ofstream file(fullFPath);
+  if (file.is_open())
+  {
+    for (float val: measurements)
+    {
+      file << val << " ";
+    }
+    file.close();
+  }
+}
+#endif
+
+const float& MyTimer::getLast()
+{
+  return buffer[tail];
 }

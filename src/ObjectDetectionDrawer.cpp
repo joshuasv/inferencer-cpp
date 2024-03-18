@@ -6,6 +6,13 @@
 ObjectDetectionDrawer::ObjectDetectionDrawer(const std::vector<std::string>& classNames, const std::vector<cv::Scalar>& classColors, QObject* parent)
   : QThread(parent), classNames(classNames), classColors(classColors) { }
 
+ObjectDetectionDrawer::~ObjectDetectionDrawer()
+{
+  #ifdef DEBUG_MODE
+  // Save timer measurements to file
+  t.saveMeasurements("drawer_times");
+  #endif
+}
 
 void ObjectDetectionDrawer::draw(const cv::Mat& frame, const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences)
 {

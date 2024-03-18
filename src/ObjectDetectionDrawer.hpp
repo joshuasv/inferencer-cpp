@@ -13,6 +13,7 @@ class ObjectDetectionDrawer: public QThread
 
   public:
     ObjectDetectionDrawer(const std::vector<std::string>& classNames, const std::vector<cv::Scalar>& classColors, QObject* parent = nullptr);
+    ~ObjectDetectionDrawer();
 
   private:
     const std::vector<std::string> classNames;
