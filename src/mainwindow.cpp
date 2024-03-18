@@ -53,9 +53,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 {
   if (event->key() == Qt::Key_Q)
   {
-    webcamFrameGrabber->terminate();
-    inferencerThread->terminate();
-    drawerThread->terminate();
+    webcamFrameGrabber->quit();
+    inferencerThread->quit();
+    drawerThread->quit();
+    webcamFrameGrabber->wait();
+    inferencerThread->wait();
+    drawerThread->wait();
     close();
   }
   else if (event->key() == Qt::Key_S)
