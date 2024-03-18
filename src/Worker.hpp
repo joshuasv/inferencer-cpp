@@ -19,6 +19,9 @@ class Worker: public QThread
     cv::VideoCapture cap;
     void run(void);
     MyTimer t = MyTimer(20);
+    int sourceFPS;
+    bool isFile = false;
+    int frameDelay = 0;
 
   signals:
     void frameCaptured(const cv::Mat &frame);

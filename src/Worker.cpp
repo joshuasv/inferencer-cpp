@@ -9,6 +9,10 @@ Worker::Worker(int source, QObject *parent): QThread(parent)
   {
     std::cerr << "Unable to open camera: " << source << "\n";
   }
+  sourceFPS = cap.get(cv::CAP_PROP_FPS);
+  std::cout << "FPS: " << cap.get(cv::CAP_PROP_FPS) << std::endl;
+  std::cout << "H: " << cap.get(cv::CAP_PROP_FRAME_HEIGHT) << std::endl;
+  std::cout << "W: " << cap.get(cv::CAP_PROP_FRAME_WIDTH) << std::endl;
 }
 
 Worker::Worker(std::string source, QObject *parent): QThread(parent)
@@ -18,6 +22,9 @@ Worker::Worker(std::string source, QObject *parent): QThread(parent)
   {
     std::cerr << "Unable to open video file: " << source << "\n";
   }
+  sourceFPS = cap.get(cv::CAP_PROP_FPS);
+  isFile = true;
+  frameDelay = int(1000 / sourceFPS);
 }
 
 Worker::~Worker()
@@ -43,5 +50,10 @@ void Worker::run()
     
     t.insertTimeDifference();
     emit updateTimer(t.average());
+    
+    if (isFile)
+    {
+      QThread::msleep(frameDelay);
+    }
   }
 }
