@@ -3,3 +3,4 @@ build/
 buildDebug/
 models/*
 !models/.gitkeep
+timer_results/
