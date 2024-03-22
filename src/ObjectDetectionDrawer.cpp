@@ -16,6 +16,8 @@ ObjectDetectionDrawer::~ObjectDetectionDrawer()
 
 void ObjectDetectionDrawer::draw(const cv::Mat& frame, const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences)
 {
+  auto startTime = std::chrono::high_resolution_clock::now();
+
   cv::Mat frameDraw = frame.clone();
   for (int i = 0; i < classIds.size(); ++i)
   {
@@ -35,6 +37,6 @@ void ObjectDetectionDrawer::draw(const cv::Mat& frame, const std::vector<int>& c
 
   emit frameReady(frameDraw);
 
-  t.insertTimeDifference();
+  t.insertTimeDifference(startTime);
   emit updateTimer(t.average());
 }

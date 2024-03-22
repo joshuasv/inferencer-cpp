@@ -12,6 +12,7 @@ class MyTimer
   public:
     MyTimer(size_t size);
     void insertTimeDifference();
+    void insertTimeDifference(std::chrono::high_resolution_clock::time_point startTime);
     float average();
     void print();
     size_t size();

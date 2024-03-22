@@ -13,6 +13,13 @@ void MyTimer::insertTimeDifference()
   insertWithTimestamp(timeDiff.count(), now);
 }
 
+void MyTimer::insertTimeDifference(std::chrono::high_resolution_clock::time_point startTime)
+{
+  auto now = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<float, std::milli> timeDiff = now - startTime;
+  insertWithTimestamp(timeDiff.count(), now);
+}
+
 float MyTimer::average()
 {
   if (size() == 0)
