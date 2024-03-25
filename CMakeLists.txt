@@ -7,10 +7,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-# find_package(OpenCV REQUIRED)
 find_package(onnxruntime REQUIRED)
 find_library(ONNX_RUNTIME_LIB onnxruntime HINTS /usr/local/lib)
-# include_directories(${OpenCV_INCLUDE_DIRS})
 
 # if(CMAKE_BUILD_TYPE MATCHES Debug)
 #   set(OpenCV_DIR "/home/rock/builds/opencv-4.8.1/installDebug/lib/cmake/opencv4")
@@ -18,6 +16,13 @@ find_library(ONNX_RUNTIME_LIB onnxruntime HINTS /usr/local/lib)
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
+find_path(HIREDIS_HEADER hiredis)
+include_directories(${HIREDIS_HEADER})
+find_library(HIREDIS_LIB hiredis)
+
+find_path(REDIS_PLUS_PLUS_HEADER sw)
+include_directories(${REDIS_PLUS_PLUS_HEADER})
+find_library(REDIS_PLUS_PLUS_LIB redis++)
 
 qt_standard_project_setup()
 
@@ -29,10 +34,11 @@ qt_add_executable(inferencer-cpp
   src/ObjectDetectionDrawer.cpp
   src/MyTimer.cpp
   src/globals.cpp
+  src/Redis.cpp
   src/main.cpp
 )
 
-target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets ${OpenCV_LIBS} ${ONNX_RUNTIME_LIB})
+target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets ${OpenCV_LIBS} ${ONNX_RUNTIME_LIB} ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB})
 
 set_target_properties(inferencer-cpp PROPERTIES
   WIN32_EXECUTABLE ON

@@ -8,6 +8,7 @@
 #include "Worker.hpp"
 #include "ONNXInferencer.hpp"
 #include "ObjectDetectionDrawer.hpp"
+#include "Redis.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -32,8 +33,10 @@ class MainWindow : public QMainWindow
         Worker* webcamFrameGrabber;
         ONNXInferencer* inferencer;
         ObjectDetectionDrawer* drawer;
+        Redis* redis;
         QThread* inferencerThread;
         QThread* drawerThread;
+        QThread* redisThread;
         void commonInit(void);
         QImage cvMatToQImage(const cv::Mat& mat);
 
@@ -44,6 +47,7 @@ class MainWindow : public QMainWindow
         void updateTimerFrameLabel(const float& value);
         void updateTimerInferencerLabel(const float& value);
         void updateTimerDrawerLabel(const float& value);
+        void updateTimerRedisLabel(const float& value);
 };
 
 #endif // MAINWINDOW_HPP

@@ -38,6 +38,7 @@ class ONNXInferencer: public QThread
 
   signals:
     void resultsReady(const cv::Mat& frame, const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences);
+    void sendResults(const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences);
     void updateTimer(const float& value);
 
   public slots:

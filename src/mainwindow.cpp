@@ -22,6 +22,7 @@ MainWindow::MainWindow(std::string modelFPath, std::variant<std::string, int> so
   const std::vector<std::string> classes{"white", "blue", "orange"};
   const std::vector<cv::Scalar> colors{cv::Scalar(255, 255, 255), cv::Scalar(165, 0, 0), cv::Scalar(0, 165, 255)};
   drawer = new ObjectDetectionDrawer(classes, colors);
+  redis = new Redis("0.0.0.0", 6379); // TODO; refactor
   commonInit();
 }
 
@@ -36,18 +37,24 @@ void MainWindow::commonInit(void)
   ui->setupUi(this);
   inferencerThread = new QThread();
   drawerThread = new QThread();
+  redisThread = new QThread();
   inferencer->moveToThread(inferencerThread);
   drawer->moveToThread(drawerThread);
+  redis->moveToThread(redisThread);
+  
 
   connect(webcamFrameGrabber, &Worker::frameCaptured, inferencer, &ONNXInferencer::runInference, Qt::QueuedConnection);
   connect(webcamFrameGrabber, &Worker::frameCaptured, this, &MainWindow::updateDisplay);
   connect(webcamFrameGrabber, &Worker::updateTimer, this, &MainWindow::updateTimerFrameLabel);
   connect(inferencer, &ONNXInferencer::resultsReady, drawer, &ObjectDetectionDrawer::draw, Qt::QueuedConnection);
+  connect(inferencer, &ONNXInferencer::sendResults, redis, &Redis::sendDict, Qt::QueuedConnection);
   connect(inferencer, &ONNXInferencer::updateTimer, this, &MainWindow::updateTimerInferencerLabel);
   connect(drawer, &ObjectDetectionDrawer::frameReady, this, &MainWindow::updateInferenceDisplay);
   connect(drawer, &ObjectDetectionDrawer::updateTimer, this, &MainWindow::updateTimerDrawerLabel);
+  connect(redis, &Redis::updateTimer, this, &MainWindow::updateTimerRedisLabel);
   connect(inferencerThread, &QThread::finished, inferencer, &QObject::deleteLater);
   connect(drawerThread, &QThread::finished, drawer, &QObject::deleteLater);
+  connect(redisThread, &QThread::finished, redis, &QObject::deleteLater);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -58,9 +65,11 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     webcamFrameGrabber->quit();
     inferencerThread->quit();
     drawerThread->quit();
+    redisThread->quit();
     webcamFrameGrabber->wait();
     inferencerThread->wait();
     drawerThread->wait();
+    redisThread->wait();
     close();
   }
   else if (event->key() == Qt::Key_S)
@@ -69,6 +78,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     webcamFrameGrabber->start(QThread::HighPriority);
     inferencerThread->start(QThread::HighPriority);
     drawerThread->start(QThread::HighPriority);
+    redisThread->start(QThread::HighPriority);
   }
   else
   {
@@ -147,4 +157,15 @@ void MainWindow::updateTimerDrawerLabel(const float& value)
   std::string result = msg + formattedValue;
 
   ui->timerDrawerLabel->setText(result.c_str());
+}
+
+void MainWindow::updateTimerRedisLabel(const float& value)
+{
+  std::string msg = "Redis: ";
+  std::ostringstream stream;
+  stream << std::fixed << std::setprecision(2) << value;
+  std::string formattedValue = stream.str();
+  std::string result = msg + formattedValue;
+
+  ui->timerRedisLabel->setText(result.c_str());
 }

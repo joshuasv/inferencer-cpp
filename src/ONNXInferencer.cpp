@@ -50,9 +50,9 @@ ONNXInferencer::~ONNXInferencer()
 Ort::Session ONNXInferencer::createSession(const Ort::Env& env, const std::string& modelFPath)
 {
   Ort::SessionOptions sessOps;
-  // sessOps.SetExecutionMode(ORT_SEQUENTIAL);
+  sessOps.SetExecutionMode(ORT_SEQUENTIAL);
   sessOps.SetGraphOptimizationLevel(ORT_ENABLE_ALL);
-  // sessOps.SetIntraOpNumThreads(1);
+  // sessOps.SetIntraOpNumThreads(2);
   // sessOps.SetInterOpNumThreads(1);
   // sessOps.AddConfigEntry("kOrtSessionOptionsConfigAllowIntraOpSpinning", "0");
   // sessOps.AddConfigEntry("kOrtSessionOptionsConfigIntraOpThreadAffinities", "3,4");
@@ -157,6 +157,7 @@ void ONNXInferencer::runInference(const cv::Mat& frame)
   }
 
   emit resultsReady(frame, classIds, bboxes, confidences_);
+  emit sendResults(classIds, bboxes, confidences_);
 
   t.insertTimeDifference(startTime);
   emit updateTimer(t.average());
