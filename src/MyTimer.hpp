@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <chrono>
+#include "globals.hpp"
 #ifdef DEBUG_MODE
 #include <fstream>
 #endif
@@ -10,7 +11,7 @@
 class MyTimer
 {
   public:
-    MyTimer(size_t size);
+    MyTimer(size_t size = TIMER_BUFF_SIZE);
     void insertTimeDifference();
     void insertTimeDifference(std::chrono::high_resolution_clock::time_point startTime);
     float average();

@@ -1,1 +1,2 @@
 bool IS_RUNNING;
+int TIMER_BUFF_SIZE = 200;

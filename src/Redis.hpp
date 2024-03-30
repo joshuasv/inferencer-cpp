@@ -19,7 +19,7 @@ class Redis: public QThread
   
   private:
     sw::redis::Redis redis_;
-    MyTimer t = MyTimer(20);
+    MyTimer t = MyTimer();
   
   signals:
     void updateTimer(const float& value);

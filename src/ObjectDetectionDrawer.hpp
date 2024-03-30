@@ -18,7 +18,7 @@ class ObjectDetectionDrawer: public QThread
   private:
     const std::vector<std::string> classNames;
     const std::vector<cv::Scalar> classColors;
-    MyTimer t = MyTimer(20);
+    MyTimer t = MyTimer();
 
   signals:
     void frameReady(const cv::Mat& frame);

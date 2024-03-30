@@ -23,7 +23,8 @@ class ONNXInferencer: public QThread
     std::vector<const char*> inputNodeNames;
     std::vector<const char*> outputNodeNames;
     std::vector<int64_t> inputNodeShape;
-    std::vector<int64_t> outputNodeShape;
+    // std::vector<int64_t> outputNodeShape;
+    std::vector<std::vector<int64_t>> outputNodeShapes;
     int inputNodeBytes;
     // Ort::Value& preprocessFrame(const cv::Mat& inFrame);
     Ort::Session createSession(const Ort::Env& env, const std::string& modelFPath);
@@ -34,7 +35,7 @@ class ONNXInferencer: public QThread
     float factorY = 0.75;
     std::vector<std::string> classes{"white", "blue", "orange"};
     std::vector<cv::Scalar> colors{cv::Scalar(255, 255, 255), cv::Scalar(165, 0, 0), cv::Scalar(0, 165, 255)};
-    MyTimer t = MyTimer(20);
+    MyTimer t = MyTimer();
 
   signals:
     void resultsReady(const cv::Mat& frame, const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences);

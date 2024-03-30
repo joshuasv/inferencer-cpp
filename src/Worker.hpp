@@ -18,7 +18,7 @@ class Worker: public QThread
   private:
     cv::VideoCapture cap;
     void run(void);
-    MyTimer t = MyTimer(20);
+    MyTimer t = MyTimer();
     int sourceFPS;
     bool isFile = false;
     int frameDelay = 0;
