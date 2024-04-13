@@ -1,0 +1,3 @@
+[submodule "libs/byte-track-cpp"]
+	path = libs/byte-track-cpp
+	url = https://github.com/cj-mills/byte-track-eigen.git

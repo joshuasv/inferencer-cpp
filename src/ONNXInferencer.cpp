@@ -6,6 +6,11 @@
 #include <chrono>
 #include <thread>
 
+int vectorProduct(const std::vector<int64_t>& v)
+{
+  return accumulate(v.begin(), v.end(), 1, std::multiplies<int64_t>());
+}
+
 ONNXInferencer::ONNXInferencer(const std::string& modelFPath, QObject* parent) 
   : QThread(parent),
     env(ORT_LOGGING_LEVEL_WARNING, "test"), 
@@ -35,7 +40,8 @@ ONNXInferencer::ONNXInferencer(const std::string& modelFPath, QObject* parent)
     // Get output shape
     Ort::TypeInfo typeInfo = session.GetOutputTypeInfo(i);
     auto tensorInfo = typeInfo.GetTensorTypeAndShapeInfo();
-    outputNodeShape = tensorInfo.GetShape();
+    // outputNodeShape = tensorInfo.GetShape();
+    outputNodeShapes.push_back(tensorInfo.GetShape());
   }
 }
 
@@ -79,7 +85,7 @@ void ONNXInferencer::runInference(const cv::Mat& frame)
 {
   auto startTime = std::chrono::high_resolution_clock::now();
   // TODO: refactor
-  Ort::Value outputTensor{nullptr};
+  // Ort::Value outputTensor{nullptr};
   cv::Mat outputData;
   float* data;
 
@@ -99,66 +105,59 @@ void ONNXInferencer::runInference(const cv::Mat& frame)
   );
 
   // Do inference
-  session.Run(
+  std::vector<Ort::Value> outputTensors = session.Run(
     Ort::RunOptions{nullptr},
     inputNodeNames.data(),
     &inputTensor,
     1,
     outputNodeNames.data(),
-    &outputTensor,
-    1
+    // &outputTensor,
+    3
   );
-  // Grab output bboxes
-  std::vector<int> class_ids;
-  std::vector<float> confidences;
-  std::vector<cv::Rect> boxes;
-  float* output = outputTensor.GetTensorMutableData<float>();
-  outputData = cv::Mat(outputNodeShape.at(1), outputNodeShape.at(2), CV_32F, output);
-  outputData = outputData.t();
-  data = (float*) outputData.data;
-  for (int i = 0; i < outputData.rows; ++i)
-  {
-    float* classesScores = data + 4;
-    cv::Mat scores(1, this->classes.size(), CV_32FC1, classesScores);
-    cv::Point class_id;
-    double maxClassScore;
-    cv::minMaxLoc(scores, 0, &maxClassScore, 0, &class_id);
-    if (maxClassScore > rectConfidenceThreshold)
-    {
-      confidences.push_back(maxClassScore);
-      class_ids.push_back(class_id.x);
-      float x = data[0];
-      float y = data[1];
-      float w = data[2];
-      float h = data[3];
-      int left = int((x - 0.5 * w) * factorX);
-      int top = int((y - 0.5 * h) * factorY);
-      int width = int(w * factorX);
-      int height = int(h * factorY);
-      boxes.push_back(cv::Rect(left, top, width, height));
-    }
-    data += outputData.cols;
-  }
-  // Do NMS
-  std::vector<int> nmsResult;
-  cv::dnn::NMSBoxes(boxes, confidences, rectConfidenceThreshold, iouThreshold, nmsResult);
+
+  // Get output tensor information since we have dynamic axes
+  auto& classIdsTensor = outputTensors[0];
+  auto& confidencesTensor = outputTensors[1];
+  auto& bboxesTensor = outputTensors[2];
+  auto classIdsTensorInfo = classIdsTensor.GetTensorTypeAndShapeInfo();
+  auto confidencesTensorInfo = confidencesTensor.GetTensorTypeAndShapeInfo();
+  auto bboxesTensorInfo = bboxesTensor.GetTensorTypeAndShapeInfo();
+  std::vector<int64_t> classIdsDims = classIdsTensorInfo.GetShape();
+  std::vector<int64_t> confidencesDims = confidencesTensorInfo.GetShape();
+  std::vector<int64_t> bboxesDims = bboxesTensorInfo.GetShape();
+  int classIdsNumElements = vectorProduct(classIdsDims);
+  int confidencesNumElements = vectorProduct(confidencesDims);
+  int bboxesNumElements = vectorProduct(bboxesDims);
+  int64_t* classIds_ = classIdsTensor.GetTensorMutableData<int64_t>();
+  std::vector<int64_t> classIds64(classIds_, classIds_ + classIdsNumElements);
   std::vector<int> classIds;
-  std::vector<cv::Rect> bboxes;
-  std::vector<float> confidences_;
-  for (int i = 0; i < nmsResult.size(); ++i)
+  classIds.reserve(classIdsNumElements);
+  for (int64_t value: classIds64)
   {
-    int idx = nmsResult[i];
-    int classId = class_ids[idx];
-    float confidence = confidences[idx];
-    cv::Rect bbox = boxes[idx];
-    classIds.push_back(classId);
-    bboxes.push_back(bbox);
-    confidences_.push_back(confidence);
+    classIds.push_back(static_cast<int>(value));
+  }
+  float* confidences_ = confidencesTensor.GetTensorMutableData<float>();
+  std::vector<float> confidences(confidences_, confidences_ + confidencesNumElements);
+  float* bboxes_ = bboxesTensor.GetTensorMutableData<float>();
+  cv::Mat bboxes(bboxesDims.at(0), bboxesDims.at(1), CV_32F, bboxes_);
+  std::vector<cv::Rect> bboxesCv;
+  for(int i = 0; i < bboxes.rows; ++i)
+  {
+    float* row = bboxes.ptr<float>(i);
+    float x = row[0];
+    float y = row[1];
+    float w = row[2];
+    float h = row[3];
+    int left = int((x - 0.5 * w) * factorX);
+    int top = int((y - 0.5 * h) * factorY);
+    int width = int(w * factorX);
+    int height = int(h * factorY);
+    bboxesCv.push_back(cv::Rect(left, top, width, height));
   }
 
-  emit resultsReady(frame, classIds, bboxes, confidences_);
-  emit sendResults(classIds, bboxes, confidences_);
-
+  emit resultsReady(frame, classIds, bboxesCv, confidences);
+  emit sendResults(classIds, bboxesCv, confidences);
+ 
   t.insertTimeDifference(startTime);
   emit updateTimer(t.average());
 }
