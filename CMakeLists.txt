@@ -24,6 +24,12 @@ find_path(REDIS_PLUS_PLUS_HEADER sw)
 include_directories(${REDIS_PLUS_PLUS_HEADER})
 find_library(REDIS_PLUS_PLUS_LIB redis++)
 
+add_subdirectory(libs/byte-track-cpp)
+include_directories(${CMAKE_SOURCE_DIR}/libs/byte-track-cpp/include)
+
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
 qt_standard_project_setup()
 
 qt_add_executable(inferencer-cpp
@@ -38,7 +44,7 @@ qt_add_executable(inferencer-cpp
   src/main.cpp
 )
 
-target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets ${OpenCV_LIBS} ${ONNX_RUNTIME_LIB} ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB})
+target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets ${OpenCV_LIBS} ${ONNX_RUNTIME_LIB} ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB} ByteTrackEigen ${EIGEN3_INCLUDE_DIR})
 
 set_target_properties(inferencer-cpp PROPERTIES
   WIN32_EXECUTABLE ON

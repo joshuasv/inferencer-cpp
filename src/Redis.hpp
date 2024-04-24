@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <Eigen/Dense>
 #include <sw/redis++/redis++.h>
 #include <QThread>
 #include <opencv2/core.hpp>
@@ -15,7 +16,7 @@ class Redis: public QThread
   public:
     Redis(const std::string& host, int port);
     ~Redis();
-    void sendDict(const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences);
+    void sendDict(const std::vector<int>& classIds, const Eigen::Map<Eigen::MatrixXf>& confidences, const std::vector<int>& trackIds);
   
   private:
     sw::redis::Redis redis_;

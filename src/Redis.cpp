@@ -6,19 +6,20 @@ Redis::Redis(const std::string& host, int port) :
 
 Redis::~Redis() {}
 
-void Redis::sendDict(const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences)
+void Redis::sendDict(const std::vector<int>& classIds, const Eigen::Map<Eigen::MatrixXf>& confidences, const std::vector<int>& trackIds)
 {
   auto startTime = std::chrono::high_resolution_clock::now();
   using Attrs = std::unordered_map<std::string, std::string>;
   auto pipe = redis_.pipeline(false);
   for (int i = 0; i < classIds.size(); ++i)
   {
-    char buffer[32];
-    std::snprintf(buffer, sizeof(buffer), "[%d,%d,%d,%d]", bboxes[i].x, bboxes[i].y, bboxes[i].width, bboxes[i].height);
+    // char buffer[32];
+    // std::snprintf(buffer, sizeof(buffer), "[%d,%d,%d,%d]", bboxes[i].x, bboxes[i].y, bboxes[i].width, bboxes[i].height);
     Attrs attrs = {
       {"classId", std::to_string(classIds[i])},
-      {"confidence", std::to_string(confidences[i])},
-      {"bbox",  buffer}
+      {"confidence", std::to_string(confidences(i, 0))},
+      // {"bbox",  buffer},
+      {"trackId", std::to_string(trackIds.at(i))}
     };
     pipe.xadd("test", "*", attrs.begin(), attrs.end());
   }

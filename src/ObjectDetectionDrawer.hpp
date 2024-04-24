@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <QThread>
+#include <Eigen/Dense>
 #include <opencv2/core.hpp>
 #include "MyTimer.hpp"
 
@@ -25,7 +26,7 @@ class ObjectDetectionDrawer: public QThread
     void updateTimer(const float& value);
 
   public slots:
-    void draw(const cv::Mat& frame, const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences);
+    void draw(const cv::Mat& frame, const std::vector<int>& classIds, const Eigen::MatrixXf& tlbrBoxes, const Eigen::Map<Eigen::MatrixXf>& confidences, const std::vector<int>& trackIds);
     
 };
 

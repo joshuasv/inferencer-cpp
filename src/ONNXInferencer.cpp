@@ -49,7 +49,7 @@ ONNXInferencer::~ONNXInferencer()
 {
   #ifdef DEBUG_MODE
   // Save timer measurements to file
-  t.saveMeasurements("inferencer_times");
+  timer.saveMeasurements("inferencer_times");
   #endif
 }
 
@@ -137,27 +137,36 @@ void ONNXInferencer::runInference(const cv::Mat& frame)
     classIds.push_back(static_cast<int>(value));
   }
   float* confidences_ = confidencesTensor.GetTensorMutableData<float>();
-  std::vector<float> confidences(confidences_, confidences_ + confidencesNumElements);
   float* bboxes_ = bboxesTensor.GetTensorMutableData<float>();
-  cv::Mat bboxes(bboxesDims.at(0), bboxesDims.at(1), CV_32F, bboxes_);
-  std::vector<cv::Rect> bboxesCv;
-  for(int i = 0; i < bboxes.rows; ++i)
-  {
-    float* row = bboxes.ptr<float>(i);
-    float x = row[0];
-    float y = row[1];
-    float w = row[2];
-    float h = row[3];
-    int left = int((x - 0.5 * w) * factorX);
-    int top = int((y - 0.5 * h) * factorY);
-    int width = int(w * factorX);
-    int height = int(h * factorY);
-    bboxesCv.push_back(cv::Rect(left, top, width, height));
-  }
 
-  emit resultsReady(frame, classIds, bboxesCv, confidences);
-  emit sendResults(classIds, bboxesCv, confidences);
+  // Map network outputs to Eigen matrices
+  Eigen::Map<Eigen::MatrixXf> confidences(confidences_, bboxesDims.at(0), 1);
+  Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, 4, Eigen::RowMajor>> boxesMap(bboxes_, bboxesDims.at(0), 4);
+  Eigen::MatrixXf boxesProbs(bboxesDims.at(0), 5);
+  Eigen::MatrixXf tlbrBoxes(boxesMap.rows(), 4);
+  Eigen::VectorXf cx = boxesMap.col(0).eval();
+  Eigen::VectorXf cy = boxesMap.col(1).eval();
+  Eigen::VectorXf w = boxesMap.col(2).eval();
+  Eigen::VectorXf h = boxesMap.col(3).eval();
+  Eigen::VectorXf t = cy - (0.5 * h).eval();
+  Eigen::VectorXf l = cx - (0.5 * w).eval();
+  Eigen::VectorXf b = cy + (0.5 * h).eval();
+  Eigen::VectorXf r = cx + (0.5 * w).eval();
+  t = (t * factorY).eval();
+  l = (l * factorX).eval();
+  b = (b * factorY).eval();
+  r = (r * factorX).eval();
+  tlbrBoxes << t, l, b, r;
+  boxesMap.col(0) = t; boxesMap.col(1) = l;
+  boxesProbs << boxesMap, confidences;
+
+  // Do tracking
+  std::vector<KalmanBBoxTrack>tracks = tracker.process_frame_detections(boxesProbs);
+  std::vector<int> trackIds = match_detections_with_tracks(tlbrBoxes.cast<double>(), tracks);
+
+  emit resultsReady(frame, classIds, tlbrBoxes, confidences, trackIds);
+  emit sendResults(classIds, confidences, trackIds);
  
-  t.insertTimeDifference(startTime);
-  emit updateTimer(t.average());
+  timer.insertTimeDifference(startTime);
+  emit updateTimer(timer.average());
 }

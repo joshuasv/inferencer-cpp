@@ -2,10 +2,11 @@
 #define ONNXINFERENCER_HPP
 
 #include <QThread>
+#include <Eigen/Dense>
 #include <opencv2/core.hpp>
 #include "onnxruntime/onnxruntime_cxx_api.h"
 #include "MyTimer.hpp"
-
+#include "BYTETracker.h"
 
 class ONNXInferencer: public QThread
 {
@@ -35,11 +36,12 @@ class ONNXInferencer: public QThread
     float factorY = 0.75;
     std::vector<std::string> classes{"white", "blue", "orange"};
     std::vector<cv::Scalar> colors{cv::Scalar(255, 255, 255), cv::Scalar(165, 0, 0), cv::Scalar(0, 165, 255)};
-    MyTimer t = MyTimer();
+    MyTimer timer = MyTimer();
+    BYTETracker tracker = BYTETracker(0.25, 30, 0.8, 30);
 
   signals:
-    void resultsReady(const cv::Mat& frame, const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences);
-    void sendResults(const std::vector<int>& classIds, const std::vector<cv::Rect>& bboxes, const std::vector<float>& confidences);
+    void resultsReady(const cv::Mat& frame, const std::vector<int>& classIds, const Eigen::MatrixXf& tlbrBoxes, const Eigen::Map<Eigen::MatrixXf>& confidences, const std::vector<int>& trackIds);
+    void sendResults(const std::vector<int>& classIds, const Eigen::Map<Eigen::MatrixXf>& confidences, const std::vector<int>& trackIds);
     void updateTimer(const float& value);
 
   public slots:
