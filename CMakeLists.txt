@@ -2,17 +2,20 @@ cmake_minimum_required(VERSION 3.16)
 
 project(inferencer-cpp VERSION 1.0.0 LANGUAGES CXX)
 
-set(CMAKE_PREFIX_PATH "/home/rock/Qt/6.6.2/gcc_64/lib/cmake")
+if(NOT DEFINED ENV{QT_CMAKE_PATH})
+    message(FATAL_ERROR "QT_CMAKE_PATH environment variable is not set.")
+else()
+    set(CMAKE_PREFIX_PATH $ENV{QT_CMAKE_PATH})
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+
 find_package(onnxruntime REQUIRED)
 find_library(ONNX_RUNTIME_LIB onnxruntime HINTS /usr/local/lib)
 
-# if(CMAKE_BUILD_TYPE MATCHES Debug)
-#   set(OpenCV_DIR "/home/rock/builds/opencv-4.8.1/installDebug/lib/cmake/opencv4")
-# endif()
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
@@ -44,7 +47,7 @@ qt_add_executable(inferencer-cpp
   src/main.cpp
 )
 
-target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets ${OpenCV_LIBS} ${ONNX_RUNTIME_LIB} ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB} ByteTrackEigen ${EIGEN3_INCLUDE_DIR})
+target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets ${OpenCV_LIBS} ${ONNX_RUNTIME_LIB} ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB} ByteTrackEigen)
 
 set_target_properties(inferencer-cpp PROPERTIES
   WIN32_EXECUTABLE ON
