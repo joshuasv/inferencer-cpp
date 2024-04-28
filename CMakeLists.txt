@@ -49,14 +49,32 @@ qt_add_executable(inferencer-cpp
 
 target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets ${OpenCV_LIBS} ${ONNX_RUNTIME_LIB} ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB} ByteTrackEigen)
 
-set_target_properties(inferencer-cpp PROPERTIES
-  WIN32_EXECUTABLE ON
-  MACOSX_BUNDLE ON
-)
-
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
   add_definitions(-DDEBUG_MODE)
   add_definitions(-DBUILD_DIR="${CMAKE_SOURCE_DIR}/buildDebug/")
 endif()
+
+# Deploy
+install(TARGETS ${PROJECT_NAME}
+  BUNDLE DESTINATION .
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+qt_generate_deploy_app_script(
+  TARGET ${PROJECT_NAME}
+  OUTPUT_SCRIPT deploy_script
+  NO_UNSUPPORTED_PLATFORM_ERROR
+  NO_TRANSLATIONS
+  NO_COMPILER_RUNTIME
+)
+install(SCRIPT ${deploy_script})
+
+# Uninstall; Qt library files are not being tracked in the install_manifest.txt
+add_custom_target("uninstall" COMMENT "Uninstall installed files")
+add_custom_command(
+  TARGET "uninstall"
+  POST_BUILD
+  COMMENT "Uninstall files with install_manifest.txt"
+  COMMAND xargs rm -vf < install_manifest.txt || echo Nothing in install_manifest.txt to be uninstalled!
+)
