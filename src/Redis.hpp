@@ -17,9 +17,9 @@ class Redis: public QThread
     Redis(const std::string& host, int port);
     ~Redis();
     void sendDict(const std::vector<int>& classIds, const Eigen::Map<Eigen::MatrixXf>& confidences, const std::vector<int>& trackIds);
+    sw::redis::Redis redis_;
   
   private:
-    sw::redis::Redis redis_;
     MyTimer t = MyTimer();
   
   signals:

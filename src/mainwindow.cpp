@@ -21,8 +21,8 @@ MainWindow::MainWindow(std::string modelFPath, std::variant<std::string, int> so
   // TODO: refactor
   const std::vector<std::string> classes{"white", "blue", "orange"};
   const std::vector<cv::Scalar> colors{cv::Scalar(255, 255, 255), cv::Scalar(165, 0, 0), cv::Scalar(0, 165, 255)};
-  drawer = new ObjectDetectionDrawer(classes, colors);
   redis = new Redis("0.0.0.0", 6379); // TODO; refactor
+  drawer = new ObjectDetectionDrawer(classes, colors, redis, "order_updates");
   commonInit();
 }
 

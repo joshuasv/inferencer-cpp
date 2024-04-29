@@ -1,3 +1,6 @@
 [submodule "libs/byte-track-cpp"]
 	path = libs/byte-track-cpp
 	url = https://github.com/cj-mills/byte-track-eigen.git
+[submodule "libs/json"]
+	path = libs/json
+	url = https://github.com/nlohmann/json.git

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.29.0)
 
 project(inferencer-cpp VERSION 1.0.0 LANGUAGES CXX)
 
@@ -33,6 +33,9 @@ include_directories(${CMAKE_SOURCE_DIR}/libs/byte-track-cpp/include)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
+add_subdirectory(libs/json)
+include_directories(${CMAKE_SOURCE_DIR}/libs/json/include)
+
 qt_standard_project_setup()
 
 qt_add_executable(inferencer-cpp
@@ -47,7 +50,7 @@ qt_add_executable(inferencer-cpp
   src/main.cpp
 )
 
-target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets ${OpenCV_LIBS} ${ONNX_RUNTIME_LIB} ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB} ByteTrackEigen)
+target_link_libraries(inferencer-cpp PRIVATE Qt6::Widgets ${OpenCV_LIBS} ${ONNX_RUNTIME_LIB} ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB} ByteTrackEigen nlohmann_json::nlohmann_json)
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
