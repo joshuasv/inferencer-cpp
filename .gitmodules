@@ -1,6 +1,6 @@
-[submodule "libs/byte-track-cpp"]
-	path = libs/byte-track-cpp
+[submodule "external/byte-track-cpp"]
+	path = external/byte-track-cpp
 	url = https://github.com/cj-mills/byte-track-eigen.git
-[submodule "libs/json"]
-	path = libs/json
+[submodule "external/json"]
+	path = external/json
 	url = https://github.com/nlohmann/json.git
