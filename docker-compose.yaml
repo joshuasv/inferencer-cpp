@@ -1,0 +1,51 @@
+services:
+  inferencer-app:
+    build:
+      context: .
+      args:
+        - CONTAINER_USERNAME=${CONTAINER_USERNAME}
+        - LANG=${LANG}
+        - TZ=${TZ}
+        - DEJAVU_FONTS_VERSION=${DEJAVU_FONTS_VERSION}
+        - DEJAVU_FONTS_VERSION_STR=${DEJAVU_FONTS_VERSION_STR}
+        - CMAKE_VERSION=${CMAKE_VERSION}
+        - QT_MAJOR=${QT_MAJOR}
+        - QT_VERSION=${QT_VERSION}
+        - HIREDIS_VERSION=${HIREDIS_VERSION}
+        - REDISPLUSPLUS_VERSION=${REDISPLUSPLUS_VERSION}
+        - ONNXRUNTIME_VERSION=${ONNXRUNTIME_VERSION}
+        - QT_CMAKE_PATH=${QT_CMAKE_PATH}
+        - QT_PLUGIN_PATH=${QT_PLUGIN_PATH}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}:/tmp/${WAYLAND_DISPLAY}
+    environment:
+      - LANG=${LANG}
+      - LC_ALL=${LANG}
+      - TZ=${TZ}
+      - USER_ID=${USER_ID}
+      - GROUP_ID=${GROUP_ID}
+      - XDG_RUNTIME_DIR=/tmp
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
+      - QT_QPA_PLATFORM=${QT_QPA_PLATFORM}
+      - QT_CMAKE_PATH=${QT_CMAKE_PATH}
+      - QT_QPA_FONTDIR=/usr/local/lib/fonts
+      - QT_PLUGIN_PATH=${QT_PLUGIN_PATH}
+      - CAM_ID=${CAM_ID}
+      - MODEL_FPATH=${MODEL_FPATH}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/video1:/dev/video1
+      - /dev/video2:/dev/video2
+    ipc: host
+    stdin_open: true
+    tty: true
+    command: ["inferencer-cpp", "${MODEL_FPATH}", "${CAM_ID}", "${REDIS_HOST}", "${REDIS_PORT}"]
+    depends_on:
+      - redis
+  redis:
+    image: redis:bookworm
+    ports:
+      - "6379:6379"

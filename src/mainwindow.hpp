@@ -22,7 +22,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
     public:
-        MainWindow(std::string modelFPath, std::variant<std::string, int> source, QWidget* parent = nullptr);
+        MainWindow(std::string modelFPath, std::variant<std::string, int> source, std::string redisHost, int redisPort, QWidget* parent = nullptr);
         ~MainWindow();
         std::vector<int> imgSize = {640, 640};
         const int64_t tensorShape[4] = {1, 3, imgSize.at(0), imgSize.at(1)};

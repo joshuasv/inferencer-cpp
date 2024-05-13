@@ -6,15 +6,17 @@
 bool checkArgs(QStringList& args)
 {
   // Check the right number of arguments were provided 
-  if (args.size() < 3)
+  if (args.size() < 5)
   {
-    qCritical() << "Usage:" << args.at(0) << "MODEL_PATH SOURCE";
+    qCritical() << "Usage:" << args.at(0) << "MODEL_FPATH CAM_ID REDIS_HOST REDIS_PORT";
     qCritical() << "SOURCE can be a camera index (int) or a video file path.";
     return false;
   }
 
   QString modelFPath = args.at(1);
   QString source = args.at(2);
+  QString redisHost = args.at(3);
+  QString redisPort = args.at(4);
 
   // Check model file path exist
   if (!QFile::exists(modelFPath))
@@ -29,6 +31,14 @@ bool checkArgs(QStringList& args)
   if (!isInt && !QFile::exists(source))
   {
     qCritical() << "The specified source file does not exist:" << source;
+    return false;
+  }
+
+  // Check Redis port is int
+  int redisPortTmp = redisPort.toInt(&isInt);
+  if (!isInt)
+  {
+    qCritical() << "The specified Redis port is not an int" << redisPort;
     return false;
   }
 
@@ -50,6 +60,9 @@ int main(int argc, char *argv[])
   }
   std::string modelFPath = args.at(1).toStdString();
   std::variant<std::string, int> source;
+  std::string redisHost = args.at(3).toStdString();
+  int redisPort = args.at(4).toInt();
+
   bool isInt;
   int sourceInt = args.at(2).toInt(&isInt);
   if (isInt)
@@ -60,7 +73,7 @@ int main(int argc, char *argv[])
   {
     source = args.at(2).toStdString();
   }
-  MainWindow w(modelFPath, source);
+  MainWindow w(modelFPath, source, redisHost, redisPort);
   w.show();
 
   return a.exec();

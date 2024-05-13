@@ -5,7 +5,7 @@
 #include "mainwindow.hpp"
 #include "globals.hpp"
 
-MainWindow::MainWindow(std::string modelFPath, std::variant<std::string, int> source, QWidget* parent)
+MainWindow::MainWindow(std::string modelFPath, std::variant<std::string, int> source, std::string redisHost, int redisPort, QWidget* parent)
   : QMainWindow(parent)
   , ui(new Ui::MainWindow)
 {
@@ -21,7 +21,7 @@ MainWindow::MainWindow(std::string modelFPath, std::variant<std::string, int> so
   // TODO: refactor
   const std::vector<std::string> classes{"white", "blue", "orange"};
   const std::vector<cv::Scalar> colors{cv::Scalar(255, 255, 255), cv::Scalar(165, 0, 0), cv::Scalar(0, 165, 255)};
-  redis = new Redis("0.0.0.0", 6379); // TODO; refactor
+  redis = new Redis(redisHost, redisPort);
   drawer = new ObjectDetectionDrawer(classes, colors, redis, "order_updates");
   commonInit();
 }

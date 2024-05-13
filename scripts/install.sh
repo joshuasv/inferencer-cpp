@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo cmake --install build/
+cmake --install build/

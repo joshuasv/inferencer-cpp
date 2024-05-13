@@ -2,11 +2,7 @@ cmake_minimum_required(VERSION 3.29.0)
 
 project(inferencer-cpp VERSION 1.0.0 LANGUAGES CXX)
 
-if(NOT DEFINED ENV{QT_CMAKE_PATH})
-    message(FATAL_ERROR "QT_CMAKE_PATH environment variable is not set.")
-else()
-    set(CMAKE_PREFIX_PATH $ENV{QT_CMAKE_PATH})
-endif()
+set(CMAKE_PREFIX_PATH $ENV{QT_CMAKE_PATH})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,8 +25,7 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
-find_package(onnxruntime REQUIRED)
-find_library(ONNX_RUNTIME_LIB onnxruntime HINTS /usr/local/lib)
+find_library(ONNX_RUNTIME_LIB NAMES onnxruntime HINTS "/usr/local/lib")
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -46,8 +41,7 @@ find_library(REDIS_PLUS_PLUS_LIB redis++)
 add_subdirectory(external/byte-track-cpp)
 include_directories(${CMAKE_SOURCE_DIR}/external/byte-track-cpp/include)
 
-find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(EIGEN3_INCLUDE_DIR external/eigen)
 
 add_subdirectory(external/json)
 include_directories(${CMAKE_SOURCE_DIR}/external/json/include)
