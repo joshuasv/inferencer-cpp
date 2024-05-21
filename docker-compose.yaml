@@ -37,8 +37,7 @@ services:
       - REDIS_PORT=${REDIS_PORT}
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
-      - /dev/video1:/dev/video1
-      - /dev/video2:/dev/video2
+      - /dev/video${CAM_ID}:/dev/video${CAM_ID}
     ipc: host
     stdin_open: true
     tty: true
