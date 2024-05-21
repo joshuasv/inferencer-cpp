@@ -48,3 +48,31 @@ services:
     image: redis:bookworm
     ports:
       - "6379:6379"
+  order_api:
+    build:
+      context: ./poc-specific/order_api
+    ports:
+    - "${SQLITE_PORT}:${SQLITE_PORT}"
+    environment:
+      - SQLITE_HOST=${SQLITE_HOST}
+      - SQLITE_PORT=${SQLITE_PORT}
+    command: ["python", "app.py", "--host", "$SQLITE_HOST", "--port", "$SQLITE_PORT"]
+  business_logic:
+    build:
+      context: ./poc-specific/business_logic
+    ports:
+    - "${SQLITE_PORT}:${SQLITE_PORT}"
+    - "${REDIS_PORT}:${REDIS_PORT}"
+    environment:
+      - SQLITE_HOST=order_api
+      - SQLITE_PORT=${SQLITE_PORT}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_DB_ID=${REDIS_DB_ID}
+      - REDIS_STREAM=${REDIS_STREAM}
+    tty: true
+    stdin_open: true
+    depends_on:
+      - inferencer-app
+      - redis
+      - order_api

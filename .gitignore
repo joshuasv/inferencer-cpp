@@ -5,3 +5,7 @@ models/*
 !models/.gitkeep
 timer_results/
 external/
+__pycache__/
+env/
+migrations/
+instance/

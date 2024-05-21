@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>La Sirena Object Management System</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>La Sirena Object Management System</h1>
+    </header>
+    <main>
+        <div class="row">
+            <div class="left-column">
+                <!-- Management Functions: Add, Edit, Delete, Generate Order -->
+                <section>
+                    <h2>Upload Objects From File</h2>
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <input type="file" id="fileUpload" accept=".txt"><br>
+                        <button class="primary-button" type="button" onclick="uploadObjects()">Upload</button>
+                    </form>
+                </section>
+                <section>
+                    <h2>Generate Order</h2>
+                    <label for="generateComplex">Complex:</label>
+                    <input type="checkbox" id="generateComplex"><br>
+                    <label for="generateMax">Max Number:</label>
+                    <input type="number" id="generateMax" value="5"><br>
+                    <button class="primary-button" onclick="generateOrder()">Generate Order</button>
+                </section>
+                <section>
+                    <h2>Delete Order</h2>
+                    <label for="deleteOrderId">Order ID:</label>
+                    <select id="deleteOrderId"></select><br>
+                    <button class="danger-button" onclick="deleteOrder()">Delete Order</button>
+                </section>
+            </div>
+            <div class="right-column">
+                <!-- Listing Containers: Objects and Orders -->
+                <section>
+                    <h2>Objects</h2>
+                    <div id="objectsContainer" class="container"></div>
+                </section>
+                <section>
+                    <h2>Orders</h2>
+                    <div id="ordersContainer" class="container"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
