@@ -1,21 +1,22 @@
 services:
   inferencer-app:
-    build:
-      context: .
-      args:
-        - CONTAINER_USERNAME=${CONTAINER_USERNAME}
-        - LANG=${LANG}
-        - TZ=${TZ}
-        - DEJAVU_FONTS_VERSION=${DEJAVU_FONTS_VERSION}
-        - DEJAVU_FONTS_VERSION_STR=${DEJAVU_FONTS_VERSION_STR}
-        - CMAKE_VERSION=${CMAKE_VERSION}
-        - QT_MAJOR=${QT_MAJOR}
-        - QT_VERSION=${QT_VERSION}
-        - HIREDIS_VERSION=${HIREDIS_VERSION}
-        - REDISPLUSPLUS_VERSION=${REDISPLUSPLUS_VERSION}
-        - ONNXRUNTIME_VERSION=${ONNXRUNTIME_VERSION}
-        - QT_CMAKE_PATH=${QT_CMAKE_PATH}
-        - QT_PLUGIN_PATH=${QT_PLUGIN_PATH}
+    # build:
+    #   context: .
+    #   args:
+    #     - CONTAINER_USERNAME=${CONTAINER_USERNAME}
+    #     - LANG=${LANG}
+    #     - TZ=${TZ}
+    #     - DEJAVU_FONTS_VERSION=${DEJAVU_FONTS_VERSION}
+    #     - DEJAVU_FONTS_VERSION_STR=${DEJAVU_FONTS_VERSION_STR}
+    #     - CMAKE_VERSION=${CMAKE_VERSION}
+    #     - QT_MAJOR=${QT_MAJOR}
+    #     - QT_VERSION=${QT_VERSION}
+    #     - HIREDIS_VERSION=${HIREDIS_VERSION}
+    #     - REDISPLUSPLUS_VERSION=${REDISPLUSPLUS_VERSION}
+    #     - ONNXRUNTIME_VERSION=${ONNXRUNTIME_VERSION}
+    #     - QT_CMAKE_PATH=${QT_CMAKE_PATH}
+    #     - QT_PLUGIN_PATH=${QT_PLUGIN_PATH}
+    image: jsout/inferencer-cpp:latest
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}:/tmp/${WAYLAND_DISPLAY}
